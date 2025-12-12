@@ -1,0 +1,222 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Parking Map</title>
+  <link rel="stylesheet" href="/static/style.css">
+  <script src="https://cdn.socket.io/4.7.2/socket.io.min.js" crossorigin="anonymous"></script>
+</head>
+<body>
+  <header>
+    <h1>Parking Map</h1>
+  </header>
+
+  <section class="status-bar two">
+    <div class="status">
+      <h4>Level 1</h4>
+      <div class="counts"><span id="l1-free">0</span> free · <span id="l1-occ">0</span> occupied</div>
+      <div class="bar"><div id="l1-bar"></div></div>
+    </div>
+    <div class="status">
+      <h4>Level 2</h4>
+      <div class="counts"><span id="l2-free">0</span> free · <span id="l2-occ">0</span> occupied</div>
+      <div class="bar"><div id="l2-bar"></div></div>
+    </div>
+  </section>
+
+  <main class="split-with-legend">
+    <aside class="legend">
+      <div class="legend-group">
+        <div class="legend-row"><span class="dot free"></span><span>Free</span></div>
+        <div class="legend-row"><span class="dot occ"></span><span>Occupied</span></div>
+      </div>
+      <hr>
+      <div class="legend-group">
+        <div class="legend-row"><span class="pill access">ACC</span><span>Accessibility (Level 1)</span></div>
+        <div class="legend-row"><span class="pill ev">EV</span><span>Electric Vehicle (Level 1)</span></div>
+        <div class="legend-row"><span class="pill family">FAM</span><span>Family (Level 2)</span></div>
+        <div class="legend-row"><span class="pill bike">BIKE</span><span>Bike Stand (by elevators)</span></div>
+      </div>
+      <hr>
+      <div class="legend-group">
+        <div class="legend-row"><span class="swatch store-dollarama"></span><span>Dollarama</span></div>
+        <div class="legend-row"><span class="swatch store-bestbuy"></span><span>Best Buy</span></div>
+        <div class="legend-row"><span class="swatch store-sephora"></span><span>Sephora</span></div>
+        <div class="legend-row"><span class="swatch store-canadiantire"></span><span>Canadian Tire</span></div>
+      </div>
+    </aside>
+
+    <section class="panels">
+      <!-- lvl 1 -->
+      <section class="panel">
+        <h3 class="panel-title">Level 1 (ACC + EV, Bike stands by elevator)</h3>
+        <div class="columns-4 compact">
+          <!-- left = Dollarama + Best Buy -->
+          <div class="side">
+            <div class="store-block store-dollarama">
+              <div class="store-title">Dollarama</div>
+              <div class="column-spots">
+                <div class="spot free tip" id="L1-D1A" data-type="Accessibility">
+                  <span class="label">D1A</span><span class="pill access">ACC</span>
+                </div>
+                <div class="spot free tip" id="L1-D1E" data-type="EV">
+                  <span class="label">D1E</span><span class="pill ev">EV</span>
+                </div>
+                <div class="spot free tip" id="L1-D1P" data-type="Regular">
+                  <span class="label">D1P</span>
+                </div>
+              </div>
+            </div>
+            <div class="elevator-row">
+              <div class="elevator-rect" id="elevUpLeft" title="Elevator to Level 2">⬆︎⬇︎</div>
+              <div class="spot free tip bike-spot" id="L1-BIKEL" data-type="Bike stand">
+                <span class="label">BIKEL</span><span class="pill bike">BIKE</span>
+              </div>
+            </div>
+            <div class="store-block store-bestbuy">
+              <div class="store-title">Best Buy</div>
+              <div class="column-spots">
+                <div class="spot free tip" id="L1-B1A" data-type="Accessibility">
+                  <span class="label">B1A</span><span class="pill access">ACC</span>
+                </div>
+                <div class="spot free tip" id="L1-B1E" data-type="EV">
+                  <span class="label">B1E</span><span class="pill ev">EV</span>
+                </div>
+                <div class="spot free tip" id="L1-B1P" data-type="Regular">
+                  <span class="label">B1P</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- car roads 2 way -->
+          <div class="lane down"><div class="arrow down"></div></div>
+          <div class="lane up"><div class="arrow up"></div></div>
+
+          <!-- right = Sephora + Canadian Tire-->
+          <div class="side">
+            <div class="store-block store-sephora">
+              <div class="store-title">Sephora</div>
+              <div class="column-spots">
+                <div class="spot free tip" id="L1-S1A" data-type="Accessibility">
+                  <span class="label">S1A</span><span class="pill access">ACC</span>
+                </div>
+                <div class="spot free tip" id="L1-S1E" data-type="EV">
+                  <span class="label">S1E</span><span class="pill ev">EV</span>
+                </div>
+                <div class="spot free tip" id="L1-S1P" data-type="Regular">
+                  <span class="label">S1P</span>
+                </div>
+              </div>
+            </div>
+            <div class="elevator-row">
+              <div class="spot free tip bike-spot" id="L1-BIKER" data-type="Bike stand">
+                <span class="label">BIKER</span><span class="pill bike">BIKE</span>
+              </div>
+              <div class="elevator-rect" id="elevUpRight" title="Elevator to Level 2">⬆︎⬇︎</div>
+            </div>
+            <div class="store-block store-canadiantire">
+              <div class="store-title">Canadian Tire</div>
+              <div class="column-spots">
+                <div class="spot free tip" id="L1-C1A" data-type="Accessibility">
+                  <span class="label">C1A</span><span class="pill access">ACC</span>
+                </div>
+                <div class="spot free tip" id="L1-C1E" data-type="EV">
+                  <span class="label">C1E</span><span class="pill ev">EV</span>
+                </div>
+                <div class="spot free tip" id="L1-C1P" data-type="Regular">
+                  <span class="label">C1P</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- lvl 2 -->
+      <section class="panel">
+        <h3 class="panel-title">Level 2 (Family)</h3>
+        <div class="columns-4 compact">
+          <!-- similar to lvl 1-->
+          <div class="side">
+            <div class="store-block store-dollarama">
+              <div class="store-title">Dollarama</div>
+              <div class="column-spots">
+                <div class="spot free tip" id="L2-D2F" data-type="Family">
+                  <span class="label">D2F</span><span class="pill family">FAM</span>
+                </div>
+                <div class="spot free tip" id="L2-D2P1" data-type="Regular">
+                  <span class="label">D2P1</span>
+                </div>
+                <div class="spot free tip" id="L2-D2P2" data-type="Regular">
+                  <span class="label">D2P2</span>
+                </div>
+              </div>
+            </div>
+            <div class="elevator-row">
+              <div class="elevator-rect" id="elevDownLeft" title="Elevator to Level 1">⬇︎⬆︎</div>
+            </div>
+            <div class="store-block store-bestbuy">
+              <div class="store-title">Best Buy</div>
+              <div class="column-spots">
+                <div class="spot free tip" id="L2-B2F" data-type="Family">
+                  <span class="label">B2F</span><span class="pill family">FAM</span>
+                </div>
+                <div class="spot free tip" id="L2-B2P1" data-type="Regular">
+                  <span class="label">B2P1</span>
+                </div>
+                <!-- Only 2 spots for Best Buy on Level 2 -->
+              </div>
+            </div>
+          </div>
+
+          <!-- middle lanes -->
+          <div class="lane down"><div class="arrow down"></div></div>
+          <div class="lane up"><div class="arrow up"></div></div>
+
+          <!-- similar to lvl 2-->
+          <div class="side">
+            <div class="store-block store-sephora">
+              <div class="store-title">Sephora</div>
+              <div class="column-spots">
+                <div class="spot free tip" id="L2-S2F" data-type="Family">
+                  <span class="label">S2F</span><span class="pill family">FAM</span>
+                </div>
+                <div class="spot free tip" id="L2-S2P1" data-type="Regular">
+                  <span class="label">S2P1</span>
+                </div>
+                <div class="spot free tip" id="L2-S2P2" data-type="Regular">
+                  <span class="label">S2P2</span>
+                </div>
+              </div>
+            </div>
+            <div class="elevator-row">
+              <div class="elevator-rect" id="elevDownRight" title="Elevator to Level 1">⬇︎⬆︎</div>
+            </div>
+            <div class="store-block store-canadiantire">
+              <div class="store-title">Canadian Tire</div>
+              <div class="column-spots">
+                <div class="spot free tip" id="L2-C2F" data-type="Family">
+                  <span class="label">C2F</span><span class="pill family">FAM</span>
+                </div>
+                <div class="spot free tip" id="L2-C2P1" data-type="Regular">
+                  <span class="label">C2P1</span>
+                </div>
+                <!-- Only 2 spots for Canadian Tire on Level 2 -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </section>
+  </main>
+
+  <footer>
+    <small>MKT Labs ™</small>
+  </footer>
+
+  <div id="tooltip" class="tooltip" style="display:none;"></div>
+  <script src="/static/app.js"></script>
+</body>
+</html>
